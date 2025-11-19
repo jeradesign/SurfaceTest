@@ -16,11 +16,11 @@ struct ImmersiveView: View {
     @State var rootEntity: Entity!
     let session = ARKitSession()
     let planeData = PlaneDetectionProvider(alignments: [.horizontal, .vertical])
-    let ceilingMaterial = SimpleMaterial(color: UIColor.red, roughness: 1.0, isMetallic: false)
-    let floorMaterial = SimpleMaterial(color: UIColor.yellow, roughness: 1.0, isMetallic: false)
-    let tableMaterial = SimpleMaterial(color: UIColor.blue, roughness: 1.0, isMetallic: false)
-    let wallMaterial = SimpleMaterial(color: UIColor.green, roughness: 1.0, isMetallic: false)
-    let defaultMaterial = SimpleMaterial(color: UIColor.gray, roughness: 1.0, isMetallic: false)
+    let ceilingMaterial = UnlitMaterial(color: .red)
+    let floorMaterial = UnlitMaterial(color: .yellow)
+    let tableMaterial = UnlitMaterial(color: .blue)
+    let wallMaterial = UnlitMaterial(color: .green)
+    let defaultMaterial = UnlitMaterial(color: .gray)
 
     var body: some View {
         RealityView (make: { content in
@@ -48,7 +48,7 @@ struct ImmersiveView: View {
     @MainActor
     func updatePlane(_ anchor: PlaneAnchor) async {
         // Add a new entity to represent this plane.
-        var material: SimpleMaterial
+        var material: UnlitMaterial?
         switch anchor.surfaceClassification {
         case .ceiling:
             material = ceilingMaterial
@@ -60,6 +60,10 @@ struct ImmersiveView: View {
             material = wallMaterial
         default:
             material = defaultMaterial
+        }
+
+        guard let material else {
+            return
         }
 
         guard let mesh = try? await MeshResource(from: anchor) else {
